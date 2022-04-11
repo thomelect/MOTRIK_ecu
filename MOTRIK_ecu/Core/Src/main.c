@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "A4963_def.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
