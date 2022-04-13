@@ -1,8 +1,41 @@
 # https://github.com/github/gitignore/blob/master/C.gitignore
 # https://github.com/ethanhuanginst/STM32CubeIDE-Workshop-2019/blob/master/.gitignore
 
-# Arborescence générale
-ressources/
+################################################################
+
+##### Propre à ce répertoire : #####
+
+################################################################
+
+# Archives
+*.tar
+
+# Répertoire de ressources utilisés pour le projet.
+[Rr]essources
+[Rr]essource/
+
+################################################################
+
+##### STM32cubeIDE : #####
+
+################################################################
+
+# Répertoire propre à l'utilisateur créés par STM32cubeIDE.
+.metadata/
+.settings/
+
+# Répertoire de compilation.
+[Dd]ebug/
+[Rr]elease/
+
+# Fichier de projet indiquant l'emplacement des librairies.
+*.launch
+
+################################################################
+
+##### C++ : #####
+
+################################################################
 
 # Prerequisites
 *.d
