@@ -46,8 +46,9 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
-// A4963 instructions
+char usart_buf[50];
+int usart_buf_len;
+uint16_t spi_buf[20];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,7 +58,8 @@ static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
-
+void spiWriteTest(uint16_t mosiTrame);
+void spiReadTest(uint16_t mosiTrame);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -71,9 +73,7 @@ static void MX_SPI2_Init(void);
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
-	char usart_buf[50];
-	int usart_buf_len;
-	char spi_buf[20];
+
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -99,38 +99,8 @@ int main(void) {
 	MX_SPI2_Init();
 	/* USER CODE BEGIN 2 */
 
-	uint16_t testSPI;
-	//uint8_t testSPI_tmp;
-
-	testSPI = (0xABCD); // 0xF8
-	//testSPI_tmp = ((testSPI & 0x00FF) << 8);
-	testSPI = ((testSPI << 8) | (testSPI >> 8));
-	usart_buf_len = sprintf(usart_buf, "0x%02X \n\r", (testSPI/* & 0xFF00*/));
-	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buf, usart_buf_len, 100);
-
 	// CS pin niveau HAUT.
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
-
-	// Test USART.
-	usart_buf_len = sprintf(usart_buf, "SPI TEST\n\r");
-	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buf, usart_buf_len, 100);
-
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) &testSPI, 1, 100);
-	HAL_SPI_Transmit(&hspi2, (uint8_t*) &testSPI, 2, 100);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 1.
-
-	/*
-	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
-	 HAL_SPI_Transmit(&hspi1, (uint8_t *)(REG_CONFIG4 | REG_READ | SS3), 4, 100);
-	 HAL_SPI_Receive(&hspi1, (uint8_t *)spi_buf, 1, 100);
-	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
-	 */
-
-	// Affichage de la réponse sur USART.
-	usart_buf_len = sprintf(usart_buf, "Status 0x%02x\n\r",
-			(unsigned int) spi_buf[0]);
-	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buf, usart_buf_len, 100);
 
 	/* USER CODE END 2 */
 
@@ -140,6 +110,9 @@ int main(void) {
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+		spiWriteTest(0b1111000000000011);
+		HAL_Delay(1000);
+		spiReadTest(0b1110000000000011);
 	}
 	/* USER CODE END 3 */
 }
@@ -200,7 +173,7 @@ static void MX_SPI1_Init(void) {
 	hspi1.Instance = SPI1;
 	hspi1.Init.Mode = SPI_MODE_MASTER;
 	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
 	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi1.Init.NSS = SPI_NSS_SOFT;
@@ -236,11 +209,11 @@ static void MX_SPI2_Init(void) {
 	hspi2.Instance = SPI2;
 	hspi2.Init.Mode = SPI_MODE_MASTER;
 	hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
 	hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi2.Init.NSS = SPI_NSS_SOFT;
-	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -311,6 +284,27 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+void spiWriteTest(uint16_t mosiTrame) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &mosiTrame,
+			sizeof(mosiTrame) / sizeof(uint16_t), 100);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
+}
+
+void spiReadTest(uint16_t mosiTrame) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &mosiTrame, sizeof(mosiTrame) / sizeof(uint16_t), 100);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
+	HAL_SPI_Receive(&hspi1, (uint8_t *)spi_buf, 20, 100);
+
+	spi_buf[0] = 0b1111000000000011;
+
+	// Affichage de la réponse sur USART.
+	usart_buf_len = sprintf(usart_buf, "Status 0x%04X \n\r",
+			(unsigned int) spi_buf[0]);
+	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buf, usart_buf_len, 100);
+}
 
 /* USER CODE END 4 */
 
