@@ -58,8 +58,8 @@ static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
-void spiWriteTest(uint16_t mosiTrame);
-void spiReadTest(uint16_t mosiTrame);
+void spiWriteTest(uint16_t mosiTrame, uint8_t *spiSelect);
+void spiReadTest(uint16_t mosiTrame, uint8_t *spiSelect);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -71,7 +71,8 @@ void spiReadTest(uint16_t mosiTrame);
  * @brief  The application entry point.
  * @retval int
  */
-int main(void) {
+int main(void)
+{
 	/* USER CODE BEGIN 1 */
 
 	/* USER CODE END 1 */
@@ -106,13 +107,19 @@ int main(void) {
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	while (1) {
+	while (1)
+	{
+		// Affichage de la trame envoyée.
+		//Retour haut du terminal.
+		usart_buf_len = sprintf(usart_buf, "%c%c%c%c%c", 0x1B, 0x5B, 0x3B, 0x30, 0x48);
+		HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
+
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
-		spiWriteTest(0b1111000000000011);
-		HAL_Delay(1000);
-		spiReadTest(0b1110000000000011);
+		// spiWriteTest(0b1111000000000011, &hspi1);
+		// HAL_Delay(1000);
+		spiReadTest(0b1110000000000000, &hspi1);
 	}
 	/* USER CODE END 3 */
 }
@@ -121,9 +128,10 @@ int main(void) {
  * @brief System Clock Configuration
  * @retval None
  */
-void SystemClock_Config(void) {
-	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+void SystemClock_Config(void)
+{
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
 	/** Configure the main internal regulator output voltage
 	 */
@@ -137,20 +145,21 @@ void SystemClock_Config(void) {
 	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
 	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
 		Error_Handler();
 	}
 
 	/** Initializes the CPU, AHB and APB buses clocks
 	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
@@ -160,7 +169,8 @@ void SystemClock_Config(void) {
  * @param None
  * @retval None
  */
-static void MX_SPI1_Init(void) {
+static void MX_SPI1_Init(void)
+{
 
 	/* USER CODE BEGIN SPI1_Init 0 */
 
@@ -182,13 +192,13 @@ static void MX_SPI1_Init(void) {
 	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 	hspi1.Init.CRCPolynomial = 10;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+	if (HAL_SPI_Init(&hspi1) != HAL_OK)
+	{
 		Error_Handler();
 	}
 	/* USER CODE BEGIN SPI1_Init 2 */
 
 	/* USER CODE END SPI1_Init 2 */
-
 }
 
 /**
@@ -196,7 +206,8 @@ static void MX_SPI1_Init(void) {
  * @param None
  * @retval None
  */
-static void MX_SPI2_Init(void) {
+static void MX_SPI2_Init(void)
+{
 
 	/* USER CODE BEGIN SPI2_Init 0 */
 
@@ -218,13 +229,13 @@ static void MX_SPI2_Init(void) {
 	hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 	hspi2.Init.CRCPolynomial = 10;
-	if (HAL_SPI_Init(&hspi2) != HAL_OK) {
+	if (HAL_SPI_Init(&hspi2) != HAL_OK)
+	{
 		Error_Handler();
 	}
 	/* USER CODE BEGIN SPI2_Init 2 */
 
 	/* USER CODE END SPI2_Init 2 */
-
 }
 
 /**
@@ -232,7 +243,8 @@ static void MX_SPI2_Init(void) {
  * @param None
  * @retval None
  */
-static void MX_USART2_UART_Init(void) {
+static void MX_USART2_UART_Init(void)
+{
 
 	/* USER CODE BEGIN USART2_Init 0 */
 
@@ -249,13 +261,13 @@ static void MX_USART2_UART_Init(void) {
 	huart2.Init.Mode = UART_MODE_TX_RX;
 	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart2) != HAL_OK) {
+	if (HAL_UART_Init(&huart2) != HAL_OK)
+	{
 		Error_Handler();
 	}
 	/* USER CODE BEGIN USART2_Init 2 */
 
 	/* USER CODE END USART2_Init 2 */
-
 }
 
 /**
@@ -263,8 +275,9 @@ static void MX_USART2_UART_Init(void) {
  * @param None
  * @retval None
  */
-static void MX_GPIO_Init(void) {
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+static void MX_GPIO_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	/* GPIO Ports Clock Enable */
 	__HAL_RCC_GPIOC_CLK_ENABLE();
@@ -280,30 +293,54 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
 
-void spiWriteTest(uint16_t mosiTrame) {
+void spiWriteTest(uint16_t mosiTrame, uint8_t *spiSelect)
+{
+	// Affichage de la trame envoyée.
+	usart_buf_len = sprintf(usart_buf, "WRITE -- 0x%04X ...\n\r",
+							(unsigned int)mosiTrame);
+	HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
+
+	////////////////////////////////////////////////////////////////////////
+
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) &mosiTrame,
-			sizeof(mosiTrame) / sizeof(uint16_t), 100);
+	HAL_SPI_Transmit(spiSelect, (uint8_t *)&mosiTrame,
+					 sizeof(mosiTrame) / sizeof(uint16_t), 100);
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
 }
 
-void spiReadTest(uint16_t mosiTrame) {
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) &mosiTrame, sizeof(mosiTrame) / sizeof(uint16_t), 100);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
-	HAL_SPI_Receive(&hspi1, (uint8_t *)spi_buf, 20, 100);
+void spiReadTest(uint16_t mosiTrame, uint8_t *spiSelect)
+{
+	// Affichage de la trame envoyée.
+	usart_buf_len = sprintf(usart_buf, "READ  -- 0x%04X ...\n\r",
+							(unsigned int)mosiTrame);
+	HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
 
-	spi_buf[0] = 0b1111000000000011;
+	////////////////////////////////////////////////////////////////////////
+
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); // Chip Select à 0.
+	HAL_SPI_Transmit(spiSelect, (uint8_t *)&mosiTrame,
+					 sizeof(mosiTrame) / sizeof(uint16_t), 100);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); // Chip Select à 0.
+	HAL_SPI_Receive(spiSelect, (uint8_t *)spi_buf, 20, 100);
+
+	////////////////////////////////////////////////////////////////////////
 
 	// Affichage de la réponse sur USART.
-	usart_buf_len = sprintf(usart_buf, "Status 0x%04X \n\r",
-			(unsigned int) spi_buf[0]);
-	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buf, usart_buf_len, 100);
+	usart_buf_len = sprintf(usart_buf, "------------------ \n\r");
+	HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
+
+	for (uint8_t i = 0; i < 20; ++i)
+	{
+		usart_buf_len = sprintf(usart_buf, "spi_buf #%02d 0x%04X \n\r", i,
+								(unsigned int)spi_buf[i]);
+		HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
+	}
+	usart_buf_len = sprintf(usart_buf, "------------------ \n\r");
+	HAL_UART_Transmit(&huart2, (uint8_t *)usart_buf, usart_buf_len, 100);
 }
 
 /* USER CODE END 4 */
@@ -312,28 +349,30 @@ void spiReadTest(uint16_t mosiTrame) {
  * @brief  This function is executed in case of error occurrence.
  * @retval None
  */
-void Error_Handler(void) {
+void Error_Handler(void)
+{
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
-	while (1) {
+	while (1)
+	{
 	}
 	/* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
 	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
